@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Дашборд промптов для Google Colab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --color-bg:#f7f6f2; --color-surface:#fbfbf9; --color-surface-2:#f1efea; --color-border:#d8d4cc;
+      --color-text:#23211c; --color-text-muted:#6f6c66; --color-primary:#01696f; --color-primary-hover:#0c4e54;
+      --color-success:#437a22; --color-warning:#964219; --color-blue:#006494; --color-purple:#7a39bb;
+      --shadow:0 10px 30px rgba(26,21,13,.08); --radius:18px;
+    }
+    [data-theme="dark"] {
+      --color-bg:#171614; --color-surface:#1d1b18; --color-surface-2:#26231f; --color-border:#3a3631;
+      --color-text:#e5e1d8; --color-text-muted:#a29d93; --color-primary:#4f98a3; --color-primary-hover:#77b1b9;
+      --color-success:#7cb35a; --color-warning:#d38f63; --color-blue:#67aad8; --color-purple:#b487e7;
+      --shadow:0 14px 40px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:'Manrope',system-ui,sans-serif; background:var(--color-bg); color:var(--color-text); line-height:1.5;
+    }
+    .wrap{max-width:1380px; margin:0 auto; padding:24px;}
+    .topbar{display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px;}
+    .brand{display:flex; gap:14px; align-items:center;}
+    .logo{width:44px; height:44px; border-radius:14px; background:linear-gradient(135deg,var(--color-primary),var(--color-blue)); display:grid; place-items:center; color:#fff; box-shadow:var(--shadow)}
+    .logo svg{width:24px;height:24px}
+    h1,h2,h3{margin:0; line-height:1.08}
+    h1{font-size:clamp(1.8rem,2vw,2.7rem)}
+    h2{font-size:1.2rem; margin-bottom:14px}
+    h3{font-size:1rem; margin-bottom:10px}
+    p{margin:0}
+    .muted{color:var(--color-text-muted)}
+    .toolbar{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+    .btn, select, input, textarea{font:inherit}
+    .btn{border:1px solid var(--color-border); background:var(--color-surface); color:var(--color-text); border-radius:14px; padding:12px 16px; cursor:pointer}
+    .btn.primary{background:var(--color-primary); color:#fff; border-color:transparent}
+    .btn.primary:hover{background:var(--color-primary-hover)}
+    .grid{display:grid; grid-template-columns:300px 1.2fr 1fr; gap:20px}
+    .panel{background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .panel-inner{padding:18px}
+    .stack{display:grid; gap:14px}
+    .small{font-size:.9rem}
+    .tiny{font-size:.78rem}
+    .kpi-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px}
+    .kpi{padding:14px; border-radius:16px; background:var(--color-surface-2); border:1px solid var(--color-border)}
+    .kpi .value{font-size:1.55rem; font-weight:800; margin-top:6px}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:7px 10px; border-radius:999px; background:var(--color-surface-2); border:1px solid var(--color-border); font-size:.82rem}
+    .dot{width:8px;height:8px;border-radius:50%}
+    .formats{display:grid; gap:10px}
+    .format-card{padding:14px; border:1px solid var(--color-border); border-radius:16px; background:var(--color-surface-2); cursor:pointer}
+    .format-card.active{outline:2px solid var(--color-primary); border-color:transparent}
+    .format-card strong{display:block; margin-bottom:4px}
+    .field label{display:block; font-size:.84rem; margin-bottom:8px; color:var(--color-text-muted)}
+    input, select, textarea{width:100%; border:1px solid var(--color-border); background:transparent; color:var(--color-text); border-radius:14px; padding:12px 14px}
+    textarea{min-height:92px; resize:vertical}
+    .two{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .preview{font-family:'IBM Plex Mono',monospace; white-space:pre-wrap; font-size:.86rem; background:#0f1115; color:#eef2f7; padding:18px; border-radius:16px; min-height:360px; overflow:auto}
+    .table{width:100%; border-collapse:collapse}
+    .table th,.table td{padding:10px 8px; border-bottom:1px solid var(--color-border); text-align:left; vertical-align:top; font-size:.9rem}
+    .table th{color:var(--color-text-muted); font-weight:700}
+    .tag{display:inline-block; padding:4px 8px; border-radius:999px; font-size:.74rem; background:rgba(1,105,111,.12); color:var(--color-primary)}
+    .codebox{font-family:'IBM Plex Mono',monospace; background:var(--color-surface-2); border:1px solid var(--color-border); border-radius:14px; padding:12px; font-size:.82rem; white-space:pre-wrap}
+    .footer-note{margin-top:18px; padding:14px; background:var(--color-surface-2); border-radius:14px; border:1px dashed var(--color-border)}
+    @media (max-width: 1100px){.grid{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}}
+    @media (max-width: 640px){.two,.kpi-grid{grid-template-columns:1fr}.wrap{padding:14px}.topbar{align-items:flex-start; flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18V6l8-3 8 3v12l-8 3-8-3Z"/><path d="M8 9h8M8 12h8M8 15h5"/></svg>
+        </div>
+        <div>
+          <h1>Дашборд промптов для Google Colab</h1>
+          <p class="muted">Конструктор запросов для генерации файлов через Gemini в Colab: от XLSX до JSON и Markdown.</p>
+        </div>
+      </div>
+      <div class="toolbar">
+        <button class="btn" data-theme-toggle aria-label="Переключить тему">🌙 Тема</button>
+        <button class="btn primary" id="copyPrompt">Скопировать промпт</button>
+      </div>
+    </header>
+
+    <section class="kpi-grid">
+      <article class="kpi panel"><div class="tiny muted">Поддерживаемые форматы</div><div class="value">10</div><div class="small muted">XLSX, CSV, JSON, XML, YAML, SQL, Markdown, HTML, TXT, Python</div></article>
+      <article class="kpi panel"><div class="tiny muted">Обязательные блоки промпта</div><div class="value">6</div><div class="small muted">Роль, задача, структура, ограничения, формат вывода, имя файла</div></article>
+      <article class="kpi panel"><div class="tiny muted">Режим обучения</div><div class="value">Colab + Gemini</div><div class="small muted">Полезно для Learn Mode и Custom Instructions внутри ноутбука</div></article>
+    </section>
+
+    <main class="grid">
+      <aside class="panel panel-inner stack">
+        <div>
+          <h2>Форматы</h2>
+          <div class="formats" id="formats"></div>
+        </div>
+        <div>
+          <h2>Шаблон структуры</h2>
+          <div class="codebox">Роль → Контекст → Что создать → Структура файла → Ограничения → Имя файла → Формат ответа</div>
+        </div>
+        <div>
+          <h2>Подсказки</h2>
+          <div class="stack small muted">
+            <p>Чем точнее перечислены листы, поля и правила, тем лучше Gemini пишет код для Colab.</p>
+            <p>Для XLSX полезно требовать pandas или XlsxWriter.</p>
+            <p>Для JSON и YAML важно просить валидную структуру без поясняющего текста.</p>
+            <p>Для SQL указывайте СУБД и ожидаемые типы запросов.</p>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel panel-inner stack">
+        <div>
+          <h2>Параметры промпта</h2>
+          <div class="two">
+            <div class="field"><label for="role">Роль модели</label><input id="role" value="Ты — помощник по Python и Google Colab" /></div>
+            <div class="field"><label for="audience">Контекст</label><input id="audience" value="Работа выполняется в Google Colab через чат Gemini" /></div>
+          </div>
+        </div>
+        <div class="field"><label for="task">Что нужно сгенерировать</label><textarea id="task">Сгенерируй код, который создаёт файл с указанной структурой и сохраняет его для скачивания в Colab.</textarea></div>
+        <div class="two">
+          <div class="field"><label for="fileName">Имя файла</label><input id="fileName" value="report.xlsx" /></div>
+          <div class="field"><label for="difficulty">Уровень детализации</label><select id="difficulty"><option value="basic">Базовый</option><option value="advanced" selected>Продвинутый</option><option value="strict">Строгий ТЗ-стиль</option></select></div>
+        </div>
+        <div class="field"><label for="structure">Структура файла</label><textarea id="structure">Лист 1: Продажи — колонки: Дата, Регион, Менеджер, Товар, Количество, Цена, Выручка.
+Лист 2: Итоги — сводка по регионам и общая сумма выручки.</textarea></div>
+        <div class="field"><label for="constraints">Ограничения и правила</label><textarea id="constraints">Используй pandas. Для XLSX создай файл без лишнего индекса. Добавь код скачивания файла в Colab. Верни только готовый код без объяснений.</textarea></div>
+        <div class="two">
+          <div class="field"><label for="outputFormat">Формат ответа Gemini</label><select id="outputFormat"><option value="code">Только код</option><option value="code-comments">Код с комментариями</option><option value="steps">Пошагово для Learn Mode</option></select></div>
+          <div class="field"><label for="library">Предпочтительная библиотека</label><select id="library"><option>pandas</option><option>XlsxWriter</option><option>openpyxl</option><option>json</option><option>csv</option><option>sqlite3</option></select></div>
+        </div>
+        <div class="toolbar">
+          <button class="btn primary" id="generateBtn">Собрать промпт</button>
+          <button class="btn" id="loadExample">Загрузить пример</button>
+        </div>
+      </section>
+
+      <section class="panel panel-inner stack">
+        <div>
+          <h2>Итоговый промпт</h2>
+          <div class="preview" id="promptPreview"></div>
+        </div>
+        <div>
+          <h2>Быстрые критерии качества</h2>
+          <table class="table">
+            <thead><tr><th>Критерий</th><th>Проверка</th></tr></thead>
+            <tbody id="qualityTable"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <section class="panel panel-inner" style="margin-top:20px;">
+      <h2>Библиотека шаблонов</h2>
+      <table class="table">
+        <thead>
+          <tr><th>Формат</th><th>Когда использовать</th><th>Ключевые указания</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="tag">XLSX</span></td><td>Таблицы, реестры, многолистовые отчёты</td><td>Листы, колонки, формулы, форматирование, имя файла, код скачивания</td></tr>
+          <tr><td><span class="tag">CSV</span></td><td>Простые табличные выгрузки</td><td>Разделитель, кодировка, заголовки, отсутствие индекса</td></tr>
+          <tr><td><span class="tag">JSON</span></td><td>Структурированные данные и API-заготовки</td><td>Валидный JSON без пояснений, схема ключей, список объектов</td></tr>
+          <tr><td><span class="tag">XML</span></td><td>Обменные форматы и иерархические данные</td><td>Корневой тег, дочерние узлы, атрибуты, кодировка UTF-8</td></tr>
+          <tr><td><span class="tag">YAML</span></td><td>Конфиги, пайплайны, метаданные</td><td>Отступы, без табов, логичные секции, валидный синтаксис</td></tr>
+          <tr><td><span class="tag">SQL</span></td><td>DDL, DML, витрины, запросы</td><td>Укажите PostgreSQL или SQLite, имена таблиц, поля, типы данных</td></tr>
+          <tr><td><span class="tag">Markdown</span></td><td>Отчёты, README, методички</td><td>Заголовки, таблицы, списки, деловой стиль, без воды</td></tr>
+          <tr><td><span class="tag">HTML</span></td><td>Простейшие веб-страницы и отчёты</td><td>Готовый HTML-документ, встроенный CSS, кириллица UTF-8</td></tr>
+          <tr><td><span class="tag">TXT</span></td><td>Логи, текстовые шаблоны, инструкции</td><td>Чистый текст, структура блоков, шаблонные поля</td></tr>
+          <tr><td><span class="tag">PY</span></td><td>Генераторы файлов и скрипты автоматизации</td><td>Готовый исполняемый код, библиотеки, входные параметры, сохранение файла</td></tr>
+        </tbody>
+      </table>
+      <div class="footer-note small muted">Этот дашборд предназначен для запуска как статическая HTML-страница в среде Google Colab или локально в браузере. Он помогает быстро собирать качественные промпты для Gemini под генерацию файлов, о которых вы уже вели разработку практикумов в Colab.</div>
+    </section>
+  </div>
+
+  <script>
+    const formats = [
+      {id:'xlsx', name:'XLSX', desc:'Excel, несколько листов, формулы', file:'report.xlsx', lib:'pandas', structure:'Лист 1: Данные — колонки: ID, Дата, Категория, Сумма.\nЛист 2: Сводка — агрегаты по категориям.', constraints:'Используй pandas и при необходимости XlsxWriter. Создай .xlsx без индекса, добавь код скачивания файла в Colab. Верни только готовый код.'},
+      {id:'csv', name:'CSV', desc:'Табличный экспорт без форматирования', file:'dataset.csv', lib:'csv', structure:'Таблица с колонками: id, name, date, amount, status.', constraints:'Сохрани CSV в UTF-8, разделитель запятая, с заголовками, без лишнего текста в ответе.'},
+      {id:'json', name:'JSON', desc:'Структурированные объекты и массивы', file:'data.json', lib:'json', structure:'JSON-массив объектов с полями: id, title, category, tags, created_at.', constraints:'Верни валидный JSON или код Python, который сохраняет валидный JSON-файл. Без поясняющего текста.'},
+      {id:'xml', name:'XML', desc:'Иерархические данные', file:'catalog.xml', lib:'xml.etree.ElementTree', structure:'Корневой элемент <catalog>, внутри элементы <item> с полями id, name, price, category.', constraints:'Используй UTF-8. Структура должна быть валидной XML. При генерации кода сохрани файл и покажи скачивание.'},
+      {id:'yaml', name:'YAML', desc:'Конфиги и сценарии', file:'pipeline.yaml', lib:'yaml', structure:'Разделы: project, sources, transforms, outputs, metadata.', constraints:'Строгие отступы пробелами, валидный YAML, без табуляции, без лишних комментариев.'},
+      {id:'sql', name:'SQL', desc:'Создание таблиц и запросов', file:'schema.sql', lib:'sqlite3', structure:'DDL для таблиц users, orders, products и 3 аналитических SELECT-запроса.', constraints:'Укажи диалект SQL. Верни готовый SQL-скрипт или код Python, который записывает .sql файл.'},
+      {id:'md', name:'Markdown', desc:'README и отчёты', file:'report.md', lib:'markdown', structure:'Заголовок, краткое описание, таблица, выводы, список шагов.', constraints:'Используй чистый Markdown, без HTML, деловой стиль, структурированная подача.'},
+      {id:'html', name:'HTML', desc:'Веб-отчёты и страницы', file:'report.html', lib:'html', structure:'Полный HTML-документ со стилями, заголовком, таблицей и блоком выводов.', constraints:'Верни один завершённый HTML-файл с UTF-8 и адаптивной версткой.'},
+      {id:'txt', name:'TXT', desc:'Шаблоны инструкций и логи', file:'instruction.txt', lib:'text', structure:'Разделы: Цель, Шаги, Ограничения, Проверка результата.', constraints:'Чистый текст без markdown-разметки и без служебных пояснений.'},
+      {id:'py', name:'PY', desc:'Python-скрипт генерации', file:'generator.py', lib:'python', structure:'Скрипт читает параметры, создаёт нужный файл и сохраняет его в рабочую директорию.', constraints:'Совместимость с Google Colab, явные импорты, готовый к запуску код.'}
+    ];
+
+    const formatsContainer = document.getElementById('formats');
+    const promptPreview = document.getElementById('promptPreview');
+    const qualityTable = document.getElementById('qualityTable');
+    let selected = formats[0];
+
+    function renderFormats(){
+      formatsContainer.innerHTML = '';
+      formats.forEach(fmt => {
+        const el = document.createElement('button');
+        el.className = 'format-card' + (fmt.id === selected.id ? ' active' : '');
+        el.innerHTML = `<strong>${fmt.name}</strong><span class="small muted">${fmt.desc}</span>`;
+        el.addEventListener('click', () => selectFormat(fmt.id));
+        formatsContainer.appendChild(el);
+      });
+    }
+
+    function selectFormat(id){
+      selected = formats.find(f => f.id === id);
+      document.getElementById('fileName').value = selected.file;
+      document.getElementById('library').value = selected.lib;
+      document.getElementById('structure').value = selected.structure;
+      document.getElementById('constraints').value = selected.constraints;
+      renderFormats();
+      buildPrompt();
+    }
+
+    function buildPrompt(){
+      const role = document.getElementById('role').value.trim();
+      const audience = document.getElementById('audience').value.trim();
+      const task = document.getElementById('task').value.trim();
+      const fileName = document.getElementById('fileName').value.trim();
+      const difficulty = document.getElementById('difficulty').value;
+      const structure = document.getElementById('structure').value.trim();
+      const constraints = document.getElementById('constraints').value.trim();
+      const outputFormat = document.getElementById('outputFormat').value;
+      const library = document.getElementById('library').value;
+
+      const detailMap = {
+        basic:'Сделай решение простым и понятным.',
+        advanced:'Сделай решение структурированным, пригодным для практикума и повторного использования.',
+        strict:'Строго следуй техническому заданию, ничего не добавляй от себя и не меняй имена полей.'
+      };
+
+      const outputMap = {
+        code:'Верни только готовый код.',
+        'code-comments':'Верни готовый код с краткими комментариями по ключевым шагам.',
+        steps:'Дай пошаговое решение для Learn Mode, затем итоговый код.'
+      };
+
+      const prompt = `${role}.\n${audience}.\n\nЗадача:\n${task}\n\nЦелевой формат файла: ${selected.name}.\nИмя итогового файла: ${fileName}.\nПредпочтительная библиотека или инструмент: ${library}.\n\nСтруктура файла:\n${structure}\n\nОграничения:\n${constraints}\n\nДополнительные требования:\n- ${detailMap[difficulty]}\n- ${outputMap[outputFormat]}\n- Код должен запускаться в Google Colab.\n- Если нужен экспорт файла, добавь команду сохранения и скачивания результата.`;
+
+      promptPreview.textContent = prompt;
+
+      const checks = [
+        ['Роль и контекст', role && audience ? 'Есть' : 'Нужно уточнить'],
+        ['Имя файла', fileName ? 'Указано' : 'Не указано'],
+        ['Структура', structure.split('\n').length >= 1 ? 'Описана' : 'Слабая детализация'],
+        ['Ограничения', constraints ? 'Есть ограничения' : 'Добавьте ограничения'],
+        ['Формат ответа', outputMap[outputFormat]],
+        ['Готовность для Colab', /Colab/i.test(prompt) ? 'Да' : 'Нужно упомянуть Colab']
+      ];
+
+      qualityTable.innerHTML = checks.map(([a,b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('');
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', buildPrompt);
+    document.getElementById('loadExample').addEventListener('click', () => selectFormat('xlsx'));
+    document.getElementById('copyPrompt').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(promptPreview.textContent);
+      const btn = document.getElementById('copyPrompt');
+      const old = btn.textContent;
+      btn.textContent = 'Скопировано';
+      setTimeout(() => btn.textContent = old, 1400);
+    });
+
+    document.querySelectorAll('input, textarea, select').forEach(el => el.addEventListener('input', buildPrompt));
+
+    (function(){
+      const t=document.querySelector('[data-theme-toggle]'),r=document.documentElement;
+      let d=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+      r.setAttribute('data-theme',d);
+      t.addEventListener('click',()=>{d=d==='dark'?'light':'dark';r.setAttribute('data-theme',d);});
+    })();
+
+    renderFormats();
+    buildPrompt();
+  </script>
+</body>
+</html>
